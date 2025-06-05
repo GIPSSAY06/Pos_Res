@@ -1,0 +1,31 @@
+.mesa {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 10px;
+}
+
+.mesa-label {
+  background-color: #6d4c41;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  font-weight: bold;
+}
+
+.mesa-estado {
+  padding: 4px 10px;
+  border-radius: 20px;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.verde {
+  background-color: #00c853;
+}
+
+.rojo {
+  background-color: #d50000;
+}
