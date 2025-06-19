@@ -11,17 +11,17 @@ export default function HeaderMesero({ nombre }) {
   };
 
   return (
-    <div className="header-mesero">
+    <header className="header-mesero">
       <button className="btn-link" onClick={() => navigate('/ordenes-abiertas')}>
-        ÓRDENES ABIERTAS
+        Órdenes Abiertas
       </button>
 
       <div className="usuario-dropdown">
-        <span className="usuario-nombre">{nombre}</span>
+        <span className="usuario-nombre">{nombre} ⌄</span>
         <div className="dropdown-contenido">
           <button onClick={cerrarSesion}>Cerrar sesión</button>
         </div>
       </div>
-    </div>
+    </header>
   );
 }

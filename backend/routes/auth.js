@@ -14,12 +14,14 @@ router.post('/login', async (req, res) => {
         }
 
         const user = rows[0];
+        console.log('Usuario logeado:', user);  // <-- Agrega este log para ver el usuario en consola
         res.json({ id: user.id, name: user.name, role: user.role });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Error en el servidor' });
     }
 });
+
 
 router.get('/usuario/:pin', async (req, res) => {
     const { pin } = req.params;

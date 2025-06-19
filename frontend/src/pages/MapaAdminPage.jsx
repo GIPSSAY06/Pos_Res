@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import HeaderMesero from '../components/HeaderMesero';
 import { useNavigate } from 'react-router-dom';
-import MapaMesas from './MapaMesas'; // Importa el nuevo componente
+import AdminHeader from '../components/AdminHeader';
+import MapaMesas from './MapaMesas'; // Asegúrate de importar el correcto
 
-export default function MeseroPage() {
+export default function MapaAdminPage() {
   const navigate = useNavigate();
-  const [nombreUsuario, setNombreUsuario] = useState('Cargando...');
+  const [adminName, setAdminName] = useState('Cargando...');
 
   const mesasNormales = Array.from({ length: 12 }, (_, i) => ({
     id: i + 1,
@@ -22,21 +22,14 @@ export default function MeseroPage() {
   };
 
   useEffect(() => {
-    const pin = sessionStorage.getItem('pin');
-    if (!pin) {
-      navigate('/');
-      return;
-    }
+    const rol = localStorage.getItem('rol');
+    const nombre = localStorage.getItem('adminName');
 
-    fetch(`http://localhost:3000/api/usuario/${pin}`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
-        return res.json();
-      })
-      .then((data) => {
-        setNombreUsuario(data.name || 'Mesero desconocido');
-      })
-      .catch(() => setNombreUsuario('Mesero desconocido'));
+    if (rol !== 'admin') {
+      navigate('/');
+    } else {
+      setAdminName(nombre || 'Admin');
+    }
   }, [navigate]);
 
   return (
@@ -48,7 +41,7 @@ export default function MeseroPage() {
         flexDirection: 'column',
       }}
     >
-      <HeaderMesero nombre={nombreUsuario} />
+      <AdminHeader nombre={adminName} />
 
       <div
         style={{
@@ -61,8 +54,11 @@ export default function MeseroPage() {
           gap: '2rem',
         }}
       >
-        {/* Usamos el componente MapaMesas */}
-        <MapaMesas mesasNormales={mesasNormales} mesasExtras={mesasExtras} onClickMesa={handleClickMesa} />
+        <MapaMesas
+          mesasNormales={mesasNormales}
+          mesasExtras={mesasExtras}
+          onClickMesa={handleClickMesa}
+        />
       </div>
     </div>
   );

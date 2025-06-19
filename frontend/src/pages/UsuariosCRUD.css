@@ -1,0 +1,140 @@
+/* UsuariosCRUD.css */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+}
+
+.usuarios-container {
+  min-height: calc(100vh - 60px); /* assuming header height ~60px */
+  padding: 20px 40px;
+  box-sizing: border-box;
+  background-color: white;
+  width: 100vw;
+  overflow-y: auto;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.usuario-form {
+  margin-bottom: 30px;
+}
+
+.usuario-form h2 {
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.usuario-form label {
+  display: block;
+  margin-bottom: 15px;
+  font-weight: 500;
+}
+
+.usuario-form input,
+.usuario-form select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  border: 1.5px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease;
+}
+
+.usuario-form input:focus,
+.usuario-form select:focus {
+  outline: none;
+  border-color: #76ff03;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-primary {
+  background-color: #76ff03;
+  border: none;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #64dd17;
+}
+
+.btn-secondary {
+  background-color: #eeeeee;
+  border: none;
+  color: #333;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: #d6d6d6;
+}
+
+.usuarios-listado h2 {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1.5px solid #ddd;
+}
+
+thead tr {
+  background-color: #e0e0e0;
+}
+
+th, td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1.5px solid #ddd;
+  font-size: 1rem;
+}
+
+tbody tr:hover {
+  background-color: #f0f0f0;
+}
+
+.btn-danger {
+  background-color: #ff5252;
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  margin-left: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.btn-danger:hover {
+  background-color: #e04848;
+}
+
+.error {
+  color: #d32f2f;
+  font-weight: 600;
+}
