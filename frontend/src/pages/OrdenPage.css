@@ -1,31 +1,85 @@
 .orden-layout {
   display: flex;
   gap: 20px;
-}
-
-.orden-resumen {
-  flex: 1;
+  height: 90vh;
   padding: 20px;
-  background-color: #f5f5f5;
-  border-radius: 6px;
-  height: 80vh;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  box-sizing: border-box;
 }
 
 .orden-productos {
   flex: 2;
   display: flex;
   flex-direction: column;
+  background-color: #fafafa;
+  padding: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.cards-grid.scrollable {
+  flex: 1;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  padding-right: 10px;
+}
+
+.orden-resumen {
+  flex: 1;
+  background-color: #f5f5f5;
+  padding: 20px;
+  border-radius: 8px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.total {
+  font-weight: bold;
+  text-align: right;
+  font-size: 18px;
+  margin-top: 10px;
+}
+
+.orden-productos h2,
+.orden-resumen h2 {
+  margin-bottom: 12px;
+  font-size: 22px;
+  color: #333;
+}
+
+.orden-resumen ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.orden-resumen li {
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-eliminar {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 2px 8px;
+  cursor: pointer;
+  margin-left: 10px;
+  font-size: 14px;
 }
 
 .barra-controles {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   align-items: center;
 }
 
@@ -35,6 +89,7 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  font-weight: bold;
 }
 
 .btn-filtro.activo {
@@ -50,20 +105,30 @@
   min-width: 200px;
 }
 
-.total {
-  font-weight: bold;
-  text-align: right;
-  font-size: 18px;
-  margin-top: 10px;
-}
-
-.btn-registrar {
+.btn-guardar,
+.btn-cerrar,
+.btn-cancelar {
   margin-top: 10px;
   padding: 10px;
   width: 100%;
-  background-color: green;
-  color: white;
   border: none;
   border-radius: 6px;
   font-size: 16px;
+  cursor: pointer;
 }
+
+.btn-guardar {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-cerrar {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-cancelar {
+  background-color: #dc3545;
+  color: white;
+}
+

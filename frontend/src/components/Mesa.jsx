@@ -1,6 +1,7 @@
 export default function Mesa({ numero, estado, onClick }) {
-  const colorEstado = estado === 'ocupada' ? '#e74c3c' : '#2ecc71'; // rojo o verde
+  const colorEstado = estado === 'ocupada' ? '#e74c3c' : '#2ecc71';
   const esMesaLarga = typeof numero === 'string' && numero.length > 6;
+  const isEspecial = numero === 'Pickup' || numero === 'Domicilio';
 
   return (
     <div
@@ -9,7 +10,7 @@ export default function Mesa({ numero, estado, onClick }) {
         position: 'relative',
         width: '100px',
         height: '100px',
-        backgroundColor: '#CD853F', // tono más claro (antes: '#8B4513')
+        backgroundColor: '#CD853F',
         borderRadius: '12px',
         display: 'flex',
         justifyContent: 'center',
@@ -20,7 +21,6 @@ export default function Mesa({ numero, estado, onClick }) {
         boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
       }}
     >
-      {/* Sillas alrededor */}
       {['top', 'bottom', 'left', 'right'].map((pos) => (
         <div
           key={pos}
@@ -38,7 +38,6 @@ export default function Mesa({ numero, estado, onClick }) {
         ></div>
       ))}
 
-      {/* Nombre/ID */}
       <span
         style={{
           color: 'white',
@@ -48,11 +47,17 @@ export default function Mesa({ numero, estado, onClick }) {
           wordBreak: 'break-word',
         }}
       >
-        MESA<br />
-        {numero}
+        {!isEspecial ? (
+          <>
+            MESA
+            <br />
+            {numero}
+          </>
+        ) : (
+          numero
+        )}
       </span>
 
-      {/* Estado */}
       <div
         style={{
           position: 'absolute',

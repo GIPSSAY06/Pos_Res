@@ -1,0 +1,14 @@
+/* ProductoCard.css */
+.producto-card {
+  background-color: white;
+  padding: 12px;
+  border-radius: 6px;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.producto-card:hover {
+  transform: scale(1.03);
+  background-color: #f0f8ff;
+}

@@ -1,181 +1,210 @@
+// OrdenPage.jsx
 import { useEffect, useState } from 'react';
-import ProductoCard from "../components/ProductoCard";
-import NotaModal from "../components/NotaModal";
+import { useLocation } from 'react-router-dom';
+import ProductoCard from '../components/ProductoCard';
+import HeaderMesero from '../components/HeaderMesero';
+import AdminHeader from '../components/AdminHeader';
 import './OrdenPage.css';
-import HeaderMesero from '../components/HeaderOrdenPage';
-import AdminHeader from '../components/AdminHeader'; // 👈 importa AdminHeader
-import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function OrdenPage() {
-  const navigate = useNavigate();
   const location = useLocation();
+  const { ordenId: ordenIdDesdeRuta } = location.state || {};
 
-  const [mesaId, setMesaId] = useState(null);
-  const [alimentos, setAlimentos] = useState([]);
-  const [orden, setOrden] = useState({});
-  const [mostrarModal, setMostrarModal] = useState(false);
-  const [alimentoSeleccionado, setAlimentoSeleccionado] = useState(null);
+  const [productos, setProductos] = useState([]);
+  const [orden, setOrden] = useState([]);
+  const [ordenId, setOrdenId] = useState(ordenIdDesdeRuta || null);
   const [filtro, setFiltro] = useState('todos');
   const [busqueda, setBusqueda] = useState('');
-  const [nombreUsuario, setNombreUsuario] = useState('');
-  const [rol, setRol] = useState('mesero'); // 👈 default como mesero
+  const [guardando, setGuardando] = useState(false);
+  const [notas, setNotas] = useState('');
+  const [montoExtra, setMontoExtra] = useState(0);
+
+  const nombre = localStorage.getItem('adminName') || 'Usuario';
+  const rol = localStorage.getItem('rol');
 
   useEffect(() => {
-    const storedRol = localStorage.getItem('rol') || 'mesero';
-    setRol(storedRol);
-
-    if (storedRol === 'admin') {
-      const adminName = localStorage.getItem('adminName') || 'Admin';
-      setNombreUsuario(adminName);
-    } else {
-      const pin = sessionStorage.getItem('pin');
-      if (!pin) {
-        navigate('/');
-        return;
-      }
-
-      fetch(`http://localhost:3000/api/usuario/${pin}`)
-        .then((res) => {
-          if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
-          return res.json();
-        })
-        .then((data) => {
-          setNombreUsuario(data.name || 'Mesero desconocido');
-        })
-        .catch(() => {
-          setNombreUsuario('Mesero desconocido');
-        });
-    }
-  }, [navigate]);
+    fetch('http://localhost:3000/api/productos/visibles')
+      .then((res) => res.json())
+      .then((data) => setProductos(data))
+      .catch((err) => console.error('Error al cargar productos:', err));
+  }, []);
 
   useEffect(() => {
-    const { mesaId } = location.state || {};
-    if (mesaId) {
-      setMesaId(mesaId);
-    } else {
-      navigate('/');
+    if (ordenIdDesdeRuta) {
+      // Cargar datos de orden existente
+      fetch(`http://localhost:3000/api/ordenes/${ordenIdDesdeRuta}`)
+        .then(res => res.json())
+        .then(data => {
+          setOrdenId(data.id);
+          setNotas(data.notas || '');
+          setMontoExtra(data.monto_extra || 0);
+          const productosRepetidos = [];
+          data.productos.forEach(p => {
+            for (let i = 0; i < (p.cantidad || 1); i++) {
+              productosRepetidos.push(p);
+            }
+          });
+          setOrden(productosRepetidos);
+        })
+        .catch(err => console.error('Error al cargar orden existente:', err));
     }
+  }, [ordenIdDesdeRuta]);
 
-    fetch('http://localhost:3000/alimentos')
-      .then(res => res.json())
-      .then(data => setAlimentos(data))
-      .catch(err => console.error('Error al obtener alimentos:', err));
-  }, [navigate, location.state]);
-
-  const cerrarSesion = () => {
-    if (rol === 'admin') {
-      localStorage.removeItem('pin');
-      localStorage.removeItem('rol');
-      localStorage.removeItem('token');
-      localStorage.removeItem('adminName');
-    } else {
-      sessionStorage.removeItem('pin');
-    }
-    navigate('/');
+  const agregarProducto = (producto) => {
+    setOrden((prev) => [...prev, producto]);
   };
 
-  const abrirModal = (alimento) => {
-    setAlimentoSeleccionado(alimento);
-    setMostrarModal(true);
+  const eliminarProducto = (index) => {
+    setOrden((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const agregarAlimentoConNota = (nota) => {
-    const alimento = alimentoSeleccionado;
-    setOrden(prev => {
-      const actual = prev[alimento.id] || [];
-      return {
-        ...prev,
-        [alimento.id]: [
-          ...actual,
-          {
-            ...alimento,
-            cantidad: 1,
-            nota: nota?.trim() || null
-          }
-        ]
-      };
-    });
-    setMostrarModal(false);
-    setAlimentoSeleccionado(null);
-  };
+  const totalProductos = orden.reduce((sum, item) => sum + parseFloat(item.precio), 0);
+  const total = totalProductos + parseFloat(montoExtra || 0);
 
-  const total = Object.values(orden).flat().reduce(
-    (sum, item) => sum + item.precio * item.cantidad,
-    0
-  );
-
-  const alimentosFiltrados = alimentos.filter(a => {
-    const coincideBusqueda = a.nombre.toLowerCase().includes(busqueda.toLowerCase());
+  const productosFiltrados = productos.filter((p) => {
+    const coincideBusqueda = p.nombre.toLowerCase().includes(busqueda.toLowerCase());
     const coincideFiltro =
       filtro === 'todos' ||
-      (filtro === 'bebidas' && a.tipo === 'bebida') ||
-      (filtro === 'alimentos' && a.tipo === 'alimento');
+      (filtro === 'alimentos' && p.categoria_id === 1) ||
+      (filtro === 'bebidas' && p.categoria_id === 2);
     return coincideBusqueda && coincideFiltro;
   });
 
+  const guardarOrden = async () => {
+    setGuardando(true);
+
+    let nuevaOrdenId = ordenId;
+
+    // Solo crear una nueva orden si no hay una existente
+    if (!ordenId) {
+      const res = await fetch('http://localhost:3000/api/ordenes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mesa_id: null }) // puedes incluir mesa si aplica
+      });
+      const data = await res.json();
+      nuevaOrdenId = data.orden_id;
+      setOrdenId(nuevaOrdenId);
+    }
+
+    const productosAgrupados = Object.values(
+      orden.reduce((acc, item) => {
+        if (!acc[item.id]) {
+          acc[item.id] = { ...item, cantidad: 1 };
+        } else {
+          acc[item.id].cantidad += 1;
+        }
+        return acc;
+      }, {})
+    );
+
+    await fetch(`http://localhost:3000/api/ordenes/${nuevaOrdenId}/productos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        productos: productosAgrupados,
+        notas,
+        monto_extra: parseFloat(montoExtra || 0)
+      })
+    });
+
+    setGuardando(false);
+    alert('Orden guardada correctamente.');
+    setOrden([]);
+    setNotas('');
+    setMontoExtra(0);
+  };
+
+  const cancelarOrden = async () => {
+    if (!ordenId) return;
+    if (window.confirm('¿Cancelar esta orden? Esta acción no se puede deshacer.')) {
+      await fetch(`http://localhost:3000/api/ordenes/${ordenId}/cancelar`, {
+        method: 'PATCH'
+      });
+      alert('Orden cancelada.');
+      setOrden([]);
+    }
+  };
+
   return (
     <>
-      {/* 👇 Renderizar encabezado según el rol */}
       {rol === 'admin' ? (
-        <AdminHeader nombre={nombreUsuario} />
+        <AdminHeader nombre={nombre} />
       ) : (
-        <HeaderMesero nombre={nombreUsuario}>
-          <button onClick={cerrarSesion} className="btn-cerrar-sesion">
-            Cerrar sesión
-          </button>
-        </HeaderMesero>
+        <HeaderMesero nombre={nombre} />
       )}
 
-      {/* ... resto de la página */}
       <div className="orden-layout">
-        {/* Panel izquierdo */}
-        <div className="orden-resumen">
-          <h2>Orden Mesa: {mesaId}</h2>
-          {Object.keys(orden).length === 0 ? (
-            <p>No hay productos aún.</p>
-          ) : (
-            <ul>
-              {Object.entries(orden).flatMap(([id, items]) =>
-                items.map((item, index) => (
-                  <li key={`${id}-${index}`} className="item-resumen">
-                    <div className="fila-producto">
-                      <span>{item.nombre}</span>
-                      <span>${(item.precio * item.cantidad).toFixed(2)}</span>
-                    </div>
-                    {item.nota && <div className="nota">Nota: {item.nota}</div>}
-                  </li>
-                ))
-              )}
-            </ul>
-          )}
-          <div className="total">Total: ${total.toFixed(2)}</div>
-          <button className="btn-registrar">Registrar Orden</button>
-        </div>
-
-        {/* Panel derecho */}
         <div className="orden-productos">
+          <h2>Menú</h2>
           <div className="barra-controles">
-            <button className={filtro === 'alimentos' ? 'btn-filtro activo' : 'btn-filtro'} onClick={() => setFiltro('alimentos')}>Alimentos</button>
-            <button className={filtro === 'bebidas' ? 'btn-filtro activo' : 'btn-filtro'} onClick={() => setFiltro('bebidas')}>Bebidas</button>
-            <button className={filtro === 'todos' ? 'btn-filtro activo' : 'btn-filtro'} onClick={() => setFiltro('todos')}>Todos</button>
-            <input type="text" placeholder="Buscar producto..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)} className="input-busqueda" />
+            <input
+              type="text"
+              className="input-busqueda"
+              placeholder="Buscar producto..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+            />
+            <button className={`btn-filtro ${filtro === 'todos' ? 'activo' : ''}`} onClick={() => setFiltro('todos')}>Todos</button>
+            <button className={`btn-filtro ${filtro === 'alimentos' ? 'activo' : ''}`} onClick={() => setFiltro('alimentos')}>Alimentos</button>
+            <button className={`btn-filtro ${filtro === 'bebidas' ? 'activo' : ''}`} onClick={() => setFiltro('bebidas')}>Bebidas</button>
           </div>
 
-          <div className="productos-grid">
-            {alimentosFiltrados.map(alimento => (
-              <ProductoCard key={alimento.id} alimento={alimento} onClick={abrirModal} />
+          <div className="cards-grid scrollable">
+            {productosFiltrados.map((p) => (
+              <ProductoCard key={p.id} alimento={p} onClick={agregarProducto} />
             ))}
           </div>
         </div>
-      </div>
 
-      {mostrarModal && (
-        <NotaModal
-          onClose={() => setMostrarModal(false)}
-          onSave={agregarAlimentoConNota}
-          alimento={alimentoSeleccionado}
-        />
-      )}
+        <div className="orden-resumen">
+          <h2>Mi Orden</h2>
+          {orden.length === 0 ? (
+            <p>No hay productos en la orden.</p>
+          ) : (
+            <ul>
+              {orden.map((item, index) => (
+                <li key={index}>
+                  {item.nombre} - ${Number(item.precio).toFixed(2)}
+                  <button className="btn-eliminar" onClick={() => eliminarProducto(index)}>X</button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div className="campo-notas">
+            <label>Notas:</label>
+            <textarea
+              rows="3"
+              value={notas}
+              onChange={(e) => setNotas(e.target.value)}
+              placeholder="Ej: Sin cebolla, poco picante..."
+            />
+          </div>
+
+          <div className="campo-extra">
+            <label>Monto extra ($):</label>
+            <input
+              type="number"
+              step="0.01"
+              value={montoExtra}
+              onChange={(e) => setMontoExtra(e.target.value)}
+              placeholder="0.00"
+            />
+          </div>
+
+          <h3 className="total">Total: ${total.toFixed(2)}</h3>
+
+          {orden.length > 0 && (
+            <>
+              <button onClick={guardarOrden} disabled={guardando} className="btn-guardar">
+                {guardando ? 'Guardando...' : 'Enviar y Guardar Orden'}
+              </button>
+              <button onClick={cancelarOrden} className="btn-cancelar">Cancelar Orden</button>
+            </>
+          )}
+        </div>
+      </div>
     </>
   );
 }
